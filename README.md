@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+
+project URL: https://kwh-pal.lovable.app/auth
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
