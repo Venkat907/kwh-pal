@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import {
   UserProfile,
   DailyUsage,
@@ -16,6 +18,8 @@ import {
 interface AppState {
   user: UserProfile | null;
   isAuthenticated: boolean;
+  session: Session | null;
+  authUser: User | null;
   usageHistory: DailyUsage[];
   todayUsage: number;
   currentCycleUsage: number;
@@ -32,8 +36,9 @@ interface AppState {
 }
 
 interface AppContextType extends AppState {
-  login: (userId: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   updateSettings: (settings: Partial<AppState['settings']>) => void;
   markAlertAsRead: (alertId: string) => void;
   simulateUsageUpdate: () => void;
@@ -49,66 +54,126 @@ export const useApp = () => {
   return context;
 };
 
+const buildElectricityState = () => {
+  const history = generateMockUsageHistory();
+  const todayUsage = history[history.length - 1]?.usage || 0;
+  const currentCycleUsage = getCurrentCycleUsage(history, mockUser.billingCycleStart);
+  const remainingDays = getRemainingDaysInCycle(mockUser.billingCycleStart);
+  const daysElapsed = getDaysElapsedInCycle(mockUser.billingCycleStart);
+  const recommendedDailyUsage = getRecommendedDailyUsage(
+    mockUser.monthlyLimit,
+    currentCycleUsage,
+    remainingDays
+  );
+  const predictedMonthlyUsage = predictMonthlyUsage(history);
+  const alerts = generateMockAlerts(
+    todayUsage,
+    recommendedDailyUsage,
+    predictedMonthlyUsage,
+    mockUser.monthlyLimit
+  );
+
+  return {
+    usageHistory: history,
+    todayUsage,
+    currentCycleUsage,
+    remainingDays,
+    daysElapsed,
+    recommendedDailyUsage,
+    predictedMonthlyUsage,
+    alerts,
+    settings: {
+      monthlyLimit: mockUser.monthlyLimit,
+      billingCycleStart: mockUser.billingCycleStart,
+      alertsEnabled: true,
+    },
+  };
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AppState>(() => {
-    const history = generateMockUsageHistory();
-    const todayUsage = history[history.length - 1]?.usage || 0;
-    const currentCycleUsage = getCurrentCycleUsage(history, mockUser.billingCycleStart);
-    const remainingDays = getRemainingDaysInCycle(mockUser.billingCycleStart);
-    const daysElapsed = getDaysElapsedInCycle(mockUser.billingCycleStart);
-    const recommendedDailyUsage = getRecommendedDailyUsage(
-      mockUser.monthlyLimit,
-      currentCycleUsage,
-      remainingDays
-    );
-    const predictedMonthlyUsage = predictMonthlyUsage(history);
-    const alerts = generateMockAlerts(
-      todayUsage,
-      recommendedDailyUsage,
-      predictedMonthlyUsage,
-      mockUser.monthlyLimit
+  const [session, setSession] = useState<Session | null>(null);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [state, setState] = useState<AppState>(() => ({
+    user: null,
+    isAuthenticated: false,
+    session: null,
+    authUser: null,
+    ...buildElectricityState(),
+  }));
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+        setAuthUser(newSession?.user ?? null);
+        setState((prev) => ({
+          ...prev,
+          session: newSession,
+          authUser: newSession?.user ?? null,
+          isAuthenticated: !!newSession?.user,
+          user: newSession?.user
+            ? {
+                ...mockUser,
+                name: newSession.user.user_metadata?.name || newSession.user.email || 'User',
+                email: newSession.user.email || '',
+              }
+            : null,
+        }));
+        setIsLoading(false);
+      }
     );
 
-    return {
-      user: null,
-      isAuthenticated: false,
-      usageHistory: history,
-      todayUsage,
-      currentCycleUsage,
-      remainingDays,
-      daysElapsed,
-      recommendedDailyUsage,
-      predictedMonthlyUsage,
-      alerts,
-      settings: {
-        monthlyLimit: mockUser.monthlyLimit,
-        billingCycleStart: mockUser.billingCycleStart,
-        alertsEnabled: true,
-      },
-    };
-  });
-
-  const login = async (userId: string, password: string): Promise<boolean> => {
-    // Simulate login - accept any non-empty credentials
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    if (userId && password) {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setAuthUser(initialSession?.user ?? null);
       setState((prev) => ({
         ...prev,
-        user: mockUser,
-        isAuthenticated: true,
+        session: initialSession,
+        authUser: initialSession?.user ?? null,
+        isAuthenticated: !!initialSession?.user,
+        user: initialSession?.user
+          ? {
+              ...mockUser,
+              name: initialSession.user.user_metadata?.name || initialSession.user.email || 'User',
+              email: initialSession.user.email || '',
+            }
+          : null,
       }));
-      return true;
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      return { success: false, error: error.message };
     }
-    return false;
+    return { success: true };
   };
 
-  const logout = () => {
-    setState((prev) => ({
-      ...prev,
-      user: null,
-      isAuthenticated: false,
-    }));
+  const signup = async (email: string, password: string, name: string) => {
+    const redirectTo = window.location.origin;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: { name },
+      },
+    });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   const updateSettings = (newSettings: Partial<AppState['settings']>) => {
@@ -119,12 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         prev.currentCycleUsage,
         prev.remainingDays
       );
-      
-      return {
-        ...prev,
-        settings: updatedSettings,
-        recommendedDailyUsage,
-      };
+      return { ...prev, settings: updatedSettings, recommendedDailyUsage };
     });
   };
 
@@ -141,7 +201,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => {
       const increment = Number((Math.random() * 0.5).toFixed(2));
       const newTodayUsage = Number((prev.todayUsage + increment).toFixed(1));
-      
       return {
         ...prev,
         todayUsage: newTodayUsage,
@@ -153,19 +212,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Simulate real-time usage updates
   useEffect(() => {
     if (!state.isAuthenticated) return;
-    
     const interval = setInterval(() => {
       simulateUsageUpdate();
-    }, 10000); // Update every 10 seconds
-    
+    }, 10000);
     return () => clearInterval(interval);
   }, [state.isAuthenticated]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <AppContext.Provider
       value={{
         ...state,
         login,
+        signup,
         logout,
         updateSettings,
         markAlertAsRead,
