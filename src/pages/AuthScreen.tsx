@@ -11,15 +11,15 @@ import { useToast } from '@/hooks/use-toast';
 
 export const AuthScreen = () => {
   const navigate = useNavigate();
-  const { login } = useApp();
+  const { login, signup, isAuthenticated } = useApp();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Login form state
-  const [loginData, setLoginData] = useState({ userId: '', password: '' });
-  
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+
   // Signup form state
   const [signupData, setSignupData] = useState({
     name: '',
@@ -29,13 +29,19 @@ export const AuthScreen = () => {
     confirmPassword: '',
   });
 
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/dashboard', { replace: true });
+    return null;
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const success = await login(loginData.userId, loginData.password);
-      if (success) {
+      const result = await login(loginData.email, loginData.password);
+      if (result.success) {
         toast({
           title: 'Welcome back!',
           description: 'Successfully logged in to your account.',
@@ -44,7 +50,7 @@ export const AuthScreen = () => {
       } else {
         toast({
           title: 'Login failed',
-          description: 'Please check your credentials and try again.',
+          description: result.error || 'Please check your credentials and try again.',
           variant: 'destructive',
         });
       }
@@ -55,7 +61,7 @@ export const AuthScreen = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (signupData.password !== signupData.confirmPassword) {
       toast({
         title: 'Passwords do not match',
@@ -65,17 +71,34 @@ export const AuthScreen = () => {
       return;
     }
 
+    if (signupData.password.length < 6) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 6 characters.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
-    
-    // Simulate signup
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    toast({
-      title: 'Account created!',
-      description: 'Please log in with your new credentials.',
-    });
-    
-    setIsLoading(false);
+
+    try {
+      const result = await signup(signupData.email, signupData.password, signupData.name);
+      if (result.success) {
+        toast({
+          title: 'Account created!',
+          description: 'Please check your email to verify your account, then log in.',
+        });
+      } else {
+        toast({
+          title: 'Signup failed',
+          description: result.error || 'Something went wrong. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,18 +124,19 @@ export const AuthScreen = () => {
             <TabsContent value="login" className="mt-0">
               <CardTitle className="text-xl mb-1">Welcome back</CardTitle>
               <CardDescription className="mb-6">
-                Enter your credentials to access your account
+                Enter your email and password to access your account
               </CardDescription>
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="userId">User ID / Consumer Number</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="userId"
-                    placeholder="Enter your user ID"
-                    value={loginData.userId}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={loginData.email}
                     onChange={(e) =>
-                      setLoginData({ ...loginData, userId: e.target.value })
+                      setLoginData({ ...loginData, email: e.target.value })
                     }
                     required
                   />
@@ -199,9 +223,9 @@ export const AuthScreen = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signupEmail">Email</Label>
                   <Input
-                    id="email"
+                    id="signupEmail"
                     type="email"
                     placeholder="Enter your email"
                     value={signupData.email}
@@ -217,7 +241,7 @@ export const AuthScreen = () => {
                   <Input
                     id="signupPassword"
                     type="password"
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={signupData.password}
                     onChange={(e) =>
                       setSignupData({ ...signupData, password: e.target.value })
