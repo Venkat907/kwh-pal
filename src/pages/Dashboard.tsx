@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { UsageProgressRing } from '@/components/UsageProgressRing';
 import { StatusBadge } from '@/components/StatusBadge';
 import { AlertCard } from '@/components/AlertCard';
+import { LogUsageDialog } from '@/components/LogUsageDialog';
 import { useApp } from '@/contexts/AppContext';
 import { getUsageStatus } from '@/lib/electricity-data';
 
