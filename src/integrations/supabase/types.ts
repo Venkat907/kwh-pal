@@ -44,6 +44,102 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_readings: {
+        Row: {
+          cost: number
+          created_at: string
+          date: string
+          id: string
+          usage_kwh: number
+          user_id: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          date: string
+          id?: string
+          usage_kwh?: number
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          date?: string
+          id?: string
+          usage_kwh?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          alerts_enabled: boolean
+          billing_cycle_start: number
+          consumer_number: string | null
+          cost_per_kwh: number
+          created_at: string
+          electricity_plan: string
+          id: string
+          monthly_limit: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alerts_enabled?: boolean
+          billing_cycle_start?: number
+          consumer_number?: string | null
+          cost_per_kwh?: number
+          created_at?: string
+          electricity_plan?: string
+          id?: string
+          monthly_limit?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alerts_enabled?: boolean
+          billing_cycle_start?: number
+          consumer_number?: string | null
+          cost_per_kwh?: number
+          created_at?: string
+          electricity_plan?: string
+          id?: string
+          monthly_limit?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
