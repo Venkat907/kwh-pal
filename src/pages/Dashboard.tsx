@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { UsageProgressRing } from '@/components/UsageProgressRing';
 import { StatusBadge } from '@/components/StatusBadge';
 import { AlertCard } from '@/components/AlertCard';
+import { LogUsageDialog } from '@/components/LogUsageDialog';
 import { useApp } from '@/contexts/AppContext';
 import { getUsageStatus } from '@/lib/electricity-data';
 
@@ -53,6 +54,11 @@ export const Dashboard = () => {
 
       {/* Main content */}
       <main className="px-4 -mt-20 space-y-4">
+        {/* Log Usage Action */}
+        <div className="flex justify-end">
+          <LogUsageDialog />
+        </div>
+
         {/* Today's Usage Card */}
         <Card className="shadow-energy animate-slide-up">
           <CardContent className="pt-6">
