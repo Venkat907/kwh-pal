@@ -1,12 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  UserProfile,
+  useUsageReadings,
+  useUserSettings,
+  useUpdateSettings,
+  useUpsertReading,
+  useUsageAlerts,
+  useMarkAlertRead,
+  seedUsageData,
+} from '@/hooks/use-electricity-data';
+import {
   DailyUsage,
   UsageAlert,
-  mockUser,
-  generateMockUsageHistory,
   getCurrentCycleUsage,
   getRemainingDaysInCycle,
   getDaysElapsedInCycle,
@@ -15,8 +21,14 @@ import {
   generateMockAlerts,
 } from '@/lib/electricity-data';
 
-interface AppState {
-  user: UserProfile | null;
+interface AppSettings {
+  monthlyLimit: number;
+  billingCycleStart: number;
+  alertsEnabled: boolean;
+}
+
+interface AppContextType {
+  user: { name: string; consumerNumber: string; electricityPlan: string } | null;
   isAuthenticated: boolean;
   session: Session | null;
   authUser: User | null;
@@ -28,18 +40,11 @@ interface AppState {
   recommendedDailyUsage: number;
   predictedMonthlyUsage: number;
   alerts: UsageAlert[];
-  settings: {
-    monthlyLimit: number;
-    billingCycleStart: number;
-    alertsEnabled: boolean;
-  };
-}
-
-interface AppContextType extends AppState {
+  settings: AppSettings;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  updateSettings: (settings: Partial<AppState['settings']>) => void;
+  updateSettings: (settings: Partial<AppSettings>) => void;
   markAlertAsRead: (alertId: string) => void;
   simulateUsageUpdate: () => void;
 }
@@ -54,169 +59,153 @@ export const useApp = () => {
   return context;
 };
 
-const buildElectricityState = () => {
-  const history = generateMockUsageHistory();
-  const todayUsage = history[history.length - 1]?.usage || 0;
-  const currentCycleUsage = getCurrentCycleUsage(history, mockUser.billingCycleStart);
-  const remainingDays = getRemainingDaysInCycle(mockUser.billingCycleStart);
-  const daysElapsed = getDaysElapsedInCycle(mockUser.billingCycleStart);
-  const recommendedDailyUsage = getRecommendedDailyUsage(
-    mockUser.monthlyLimit,
-    currentCycleUsage,
-    remainingDays
-  );
-  const predictedMonthlyUsage = predictMonthlyUsage(history);
-  const alerts = generateMockAlerts(
-    todayUsage,
-    recommendedDailyUsage,
-    predictedMonthlyUsage,
-    mockUser.monthlyLimit
-  );
-
-  return {
-    usageHistory: history,
-    todayUsage,
-    currentCycleUsage,
-    remainingDays,
-    daysElapsed,
-    recommendedDailyUsage,
-    predictedMonthlyUsage,
-    alerts,
-    settings: {
-      monthlyLimit: mockUser.monthlyLimit,
-      billingCycleStart: mockUser.billingCycleStart,
-      alertsEnabled: true,
-    },
-  };
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [state, setState] = useState<AppState>(() => ({
-    user: null,
-    isAuthenticated: false,
-    session: null,
-    authUser: null,
-    ...buildElectricityState(),
-  }));
+  const [seeded, setSeeded] = useState(false);
 
-  // Listen for auth state changes
+  const userId = authUser?.id;
+
+  // Fetch data from database
+  const { data: readings = [] } = useUsageReadings(userId);
+  const { data: dbSettings } = useUserSettings(userId);
+  const { data: dbAlerts = [] } = useUsageAlerts(userId);
+  const updateSettingsMutation = useUpdateSettings();
+  const upsertReadingMutation = useUpsertReading();
+  const markAlertReadMutation = useMarkAlertRead();
+
+  // Seed data for new users
+  useEffect(() => {
+    if (userId && !seeded) {
+      setSeeded(true);
+      seedUsageData(userId);
+    }
+  }, [userId, seeded]);
+
+  // Auth listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession);
         setAuthUser(newSession?.user ?? null);
-        setState((prev) => ({
-          ...prev,
-          session: newSession,
-          authUser: newSession?.user ?? null,
-          isAuthenticated: !!newSession?.user,
-          user: newSession?.user
-            ? {
-                ...mockUser,
-                name: newSession.user.user_metadata?.name || newSession.user.email || 'User',
-                email: newSession.user.email || '',
-              }
-            : null,
-        }));
         setIsLoading(false);
       }
     );
 
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       setSession(initialSession);
       setAuthUser(initialSession?.user ?? null);
-      setState((prev) => ({
-        ...prev,
-        session: initialSession,
-        authUser: initialSession?.user ?? null,
-        isAuthenticated: !!initialSession?.user,
-        user: initialSession?.user
-          ? {
-              ...mockUser,
-              name: initialSession.user.user_metadata?.name || initialSession.user.email || 'User',
-              email: initialSession.user.email || '',
-            }
-          : null,
-      }));
       setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Derived electricity data
+  const settings: AppSettings = {
+    monthlyLimit: dbSettings ? Number(dbSettings.monthly_limit) : 300,
+    billingCycleStart: dbSettings?.billing_cycle_start ?? 1,
+    alertsEnabled: dbSettings?.alerts_enabled ?? true,
+  };
+
+  const usageHistory: DailyUsage[] = readings.map((r) => ({
+    date: r.date,
+    usage: Number(r.usage_kwh),
+    cost: Number(r.cost),
+  }));
+
+  const todayUsage = usageHistory.length > 0 ? usageHistory[usageHistory.length - 1].usage : 0;
+  const currentCycleUsage = getCurrentCycleUsage(usageHistory, settings.billingCycleStart);
+  const remainingDays = getRemainingDaysInCycle(settings.billingCycleStart);
+  const daysElapsed = getDaysElapsedInCycle(settings.billingCycleStart);
+  const recommendedDailyUsage = getRecommendedDailyUsage(settings.monthlyLimit, currentCycleUsage, remainingDays);
+  const predictedMonthlyUsage = predictMonthlyUsage(usageHistory);
+
+  // Combine DB alerts with generated alerts
+  const generatedAlerts = generateMockAlerts(todayUsage, recommendedDailyUsage, predictedMonthlyUsage, settings.monthlyLimit);
+  const dbAlertsMapped: UsageAlert[] = dbAlerts.map((a) => ({
+    id: a.id,
+    type: a.type as 'warning' | 'danger' | 'info',
+    title: a.title,
+    message: a.message,
+    timestamp: new Date(a.created_at),
+    read: a.read,
+  }));
+  const alerts = [...dbAlertsMapped, ...generatedAlerts];
+
+  const user = authUser
+    ? {
+        name: authUser.user_metadata?.name || authUser.email || 'User',
+        consumerNumber: dbSettings?.consumer_number || 'EC-XXXX-XXXXX',
+        electricityPlan: dbSettings?.electricity_plan || 'Standard Residential',
+      }
+    : null;
+
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      return { success: false, error: error.message };
-    }
+    if (error) return { success: false, error: error.message };
     return { success: true };
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    const redirectTo = window.location.origin;
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectTo,
-        data: { name },
+        emailRedirectTo: window.location.origin,
+        data: { name, first_name: name.split(' ')[0], last_name: name.split(' ').slice(1).join(' ') },
       },
     });
-    if (error) {
-      return { success: false, error: error.message };
-    }
+    if (error) return { success: false, error: error.message };
     return { success: true };
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
+    setSeeded(false);
   };
 
-  const updateSettings = (newSettings: Partial<AppState['settings']>) => {
-    setState((prev) => {
-      const updatedSettings = { ...prev.settings, ...newSettings };
-      const recommendedDailyUsage = getRecommendedDailyUsage(
-        updatedSettings.monthlyLimit,
-        prev.currentCycleUsage,
-        prev.remainingDays
-      );
-      return { ...prev, settings: updatedSettings, recommendedDailyUsage };
+  const updateSettings = useCallback(
+    (newSettings: Partial<AppSettings>) => {
+      if (!userId) return;
+      const updates: any = {};
+      if (newSettings.monthlyLimit !== undefined) updates.monthly_limit = newSettings.monthlyLimit;
+      if (newSettings.billingCycleStart !== undefined) updates.billing_cycle_start = newSettings.billingCycleStart;
+      if (newSettings.alertsEnabled !== undefined) updates.alerts_enabled = newSettings.alertsEnabled;
+      updateSettingsMutation.mutate({ userId, updates });
+    },
+    [userId, updateSettingsMutation]
+  );
+
+  const markAlertAsRead = useCallback(
+    (alertId: string) => {
+      markAlertReadMutation.mutate({ alertId });
+    },
+    [markAlertReadMutation]
+  );
+
+  const simulateUsageUpdate = useCallback(() => {
+    if (!userId) return;
+    const today = new Date().toISOString().split('T')[0];
+    const increment = Number((Math.random() * 0.5).toFixed(2));
+    const currentToday = usageHistory.find((r) => r.date === today);
+    const newUsage = Number(((currentToday?.usage || 0) + increment).toFixed(2));
+    const costPerKwh = dbSettings ? Number(dbSettings.cost_per_kwh) : 0.12;
+    upsertReadingMutation.mutate({
+      userId,
+      date: today,
+      usage_kwh: newUsage,
+      cost: Number((newUsage * costPerKwh).toFixed(2)),
     });
-  };
-
-  const markAlertAsRead = (alertId: string) => {
-    setState((prev) => ({
-      ...prev,
-      alerts: prev.alerts.map((alert) =>
-        alert.id === alertId ? { ...alert, read: true } : alert
-      ),
-    }));
-  };
-
-  const simulateUsageUpdate = () => {
-    setState((prev) => {
-      const increment = Number((Math.random() * 0.5).toFixed(2));
-      const newTodayUsage = Number((prev.todayUsage + increment).toFixed(1));
-      return {
-        ...prev,
-        todayUsage: newTodayUsage,
-        currentCycleUsage: Number((prev.currentCycleUsage + increment).toFixed(1)),
-      };
-    });
-  };
+  }, [userId, usageHistory, dbSettings, upsertReadingMutation]);
 
   // Simulate real-time usage updates
   useEffect(() => {
-    if (!state.isAuthenticated) return;
-    const interval = setInterval(() => {
-      simulateUsageUpdate();
-    }, 10000);
+    if (!authUser) return;
+    const interval = setInterval(simulateUsageUpdate, 30000);
     return () => clearInterval(interval);
-  }, [state.isAuthenticated]);
+  }, [authUser, simulateUsageUpdate]);
 
   if (isLoading) {
     return (
@@ -229,7 +218,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
-        ...state,
+        user,
+        isAuthenticated: !!authUser,
+        session,
+        authUser,
+        usageHistory,
+        todayUsage,
+        currentCycleUsage,
+        remainingDays,
+        daysElapsed,
+        recommendedDailyUsage,
+        predictedMonthlyUsage,
+        alerts,
+        settings,
         login,
         signup,
         logout,
