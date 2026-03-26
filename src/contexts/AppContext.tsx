@@ -219,12 +219,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [userId, usageHistory, dbSettings, upsertReadingMutation]);
 
-  // Simulate real-time usage updates
-  useEffect(() => {
-    if (!authUser) return;
-    const interval = setInterval(simulateUsageUpdate, 30000);
-    return () => clearInterval(interval);
-  }, [authUser, simulateUsageUpdate]);
 
   if (isLoading) {
     return (
