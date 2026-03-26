@@ -75,6 +75,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const upsertReadingMutation = useUpsertReading();
   const markAlertReadMutation = useMarkAlertRead();
 
+  const queryClient = useQueryClient();
+
   // Seed data for new users
   useEffect(() => {
     if (userId && !seeded) {
@@ -82,6 +84,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       seedUsageData(userId);
     }
   }, [userId, seeded]);
+
+  // Realtime subscription for usage_readings
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel('usage_readings_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'usage_readings', filter: `user_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['usage_readings', userId] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, queryClient]);
 
   // Auth listener
   useEffect(() => {
