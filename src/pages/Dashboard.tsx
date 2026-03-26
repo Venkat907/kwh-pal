@@ -163,9 +163,19 @@ export const Dashboard = () => {
           </Link>
         </div>
 
+        {/* Energy Saving Tips */}
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <EnergySavingTips />
+        </div>
+
+        {/* Energy Badges */}
+        <div className="animate-slide-up" style={{ animationDelay: '250ms' }}>
+          <EnergyBadges />
+        </div>
+
         {/* Alerts */}
         {alerts.length > 0 && (
-          <div className="space-y-3 animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <div className="space-y-3 animate-slide-up" style={{ animationDelay: '300ms' }}>
             <h3 className="font-semibold text-foreground">Recent Alerts</h3>
             {alerts.slice(0, 2).map((alert) => (
               <AlertCard

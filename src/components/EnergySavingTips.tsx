@@ -5,12 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 const tips = [
   { title: 'Unplug Idle Devices', text: 'Standby power can account for 5-10% of your electricity bill. Unplug chargers and electronics when not in use.' },
   { title: 'Use LED Bulbs', text: 'LED bulbs use up to 75% less energy and last 25x longer than incandescent lighting.' },
-  { title: 'Optimize AC Usage', text: 'Set your AC to 24-26°C. Every degree lower increases energy consumption by 3-5%.' },
-  { title: 'Wash with Cold Water', text: 'About 90% of a washing machine's energy goes to heating water. Cold wash saves significantly.' },
+  { title: 'Optimize AC Usage', text: 'Set your AC to 24-26 degrees. Every degree lower increases energy consumption by 3-5%.' },
+  { title: 'Wash with Cold Water', text: 'About 90% of washing machine energy goes to heating water. Cold wash saves significantly.' },
   { title: 'Use Natural Light', text: 'Open curtains and blinds during the day to reduce reliance on artificial lighting.' },
   { title: 'Smart Power Strips', text: 'Use smart power strips to automatically cut power to devices in standby mode.' },
   { title: 'Run Full Loads', text: 'Run your dishwasher and washing machine only with full loads to maximize efficiency.' },
-  { title: 'Seal Air Leaks', text: 'Seal gaps around doors and windows to prevent cool/warm air from escaping.' },
+  { title: 'Seal Air Leaks', text: 'Seal gaps around doors and windows to prevent cool or warm air from escaping.' },
 ];
 
 export const EnergySavingTips = () => {
