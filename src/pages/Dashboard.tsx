@@ -131,6 +131,11 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Month Comparison */}
+        <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+          <MonthComparison />
+        </div>
+
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '150ms' }}>
           <Link to="/guidance">
