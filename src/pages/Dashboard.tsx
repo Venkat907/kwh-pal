@@ -9,6 +9,7 @@ import { AlertCard } from '@/components/AlertCard';
 import { LogUsageDialog } from '@/components/LogUsageDialog';
 import { EnergySavingTips } from '@/components/EnergySavingTips';
 import { EnergyBadges } from '@/components/EnergyBadges';
+import { MonthComparison } from '@/components/MonthComparison';
 import { useApp } from '@/contexts/AppContext';
 import { getUsageStatus } from '@/lib/electricity-data';
 
@@ -129,6 +130,11 @@ export const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Month Comparison */}
+        <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+          <MonthComparison />
+        </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '150ms' }}>
