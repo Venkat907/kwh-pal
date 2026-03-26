@@ -9,6 +9,7 @@ import { AlertCard } from '@/components/AlertCard';
 import { LogUsageDialog } from '@/components/LogUsageDialog';
 import { EnergySavingTips } from '@/components/EnergySavingTips';
 import { EnergyBadges } from '@/components/EnergyBadges';
+import { MonthComparison } from '@/components/MonthComparison';
 import { useApp } from '@/contexts/AppContext';
 import { getUsageStatus } from '@/lib/electricity-data';
 
