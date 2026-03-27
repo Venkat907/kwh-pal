@@ -124,7 +124,7 @@ export const HistoryScreen = () => {
                           })}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          ${day.cost.toFixed(2)} estimated
+                          ₹{day.cost.toFixed(2)} estimated
                         </p>
                       </div>
                       <div className="text-right">
