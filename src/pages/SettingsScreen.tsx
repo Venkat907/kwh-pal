@@ -115,8 +115,9 @@ export const SettingsScreen = () => {
               <Input
                 id="monthlyLimit"
                 type="number"
-                value={settings.monthlyLimit}
+                value={limitInput}
                 onChange={(e) => handleLimitChange(e.target.value)}
+                onBlur={handleLimitBlur}
               />
             </div>
 
