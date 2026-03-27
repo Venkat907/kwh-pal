@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ArrowLeft, User, Zap, Bell, Calendar, LogOut, ChevronRight, Award } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
