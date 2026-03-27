@@ -128,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     monthlyLimit: dbSettings ? Number(dbSettings.monthly_limit) : 300,
     billingCycleStart: dbSettings?.billing_cycle_start ?? 1,
     alertsEnabled: dbSettings?.alerts_enabled ?? true,
+    costPerKwh: dbSettings ? Number(dbSettings.cost_per_kwh) : 8,
   };
 
   const usageHistory: DailyUsage[] = readings.map((r) => ({
