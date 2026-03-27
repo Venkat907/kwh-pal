@@ -1,4 +1,4 @@
-import { ArrowLeft, TrendingUp, DollarSign, Calendar, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, IndianRupee, Calendar, BarChart3, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BottomNav } from '@/components/BottomNav';
@@ -18,11 +18,11 @@ import {
 } from 'recharts';
 
 export const PredictionScreen = () => {
-  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory } =
+  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory, costPerKwh } =
     useApp();
 
   const billCategory = getBillCategory(predictedMonthlyUsage, settings.monthlyLimit);
-  const estimatedCost = predictedMonthlyUsage * 0.12; // $0.12 per kWh
+  const estimatedCost = predictedMonthlyUsage * costPerKwh;
   const weeklyData = getWeeklySummary(usageHistory);
 
   // Generate comparison data
@@ -129,16 +129,49 @@ export const PredictionScreen = () => {
         <Card className="animate-slide-up" style={{ animationDelay: '50ms' }}>
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-3 rounded-xl gradient-energy">
-              <DollarSign className="w-6 h-6 text-primary-foreground" />
+              <IndianRupee className="w-6 h-6 text-primary-foreground" />
             </div>
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Estimated Bill</p>
-              <p className="text-2xl font-bold">${estimatedCost.toFixed(2)}</p>
+              <p className="text-2xl font-bold">₹{estimatedCost.toFixed(2)}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Rate</p>
-              <p className="font-medium">$0.12/kWh</p>
+              <p className="text-sm text-muted-foreground">Tariff</p>
+              <p className="font-medium">₹{costPerKwh}/kWh</p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Bill Calculation Breakdown */}
+        <Card className="animate-slide-up" style={{ animationDelay: '75ms' }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-primary" />
+              How Your Bill is Calculated
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="p-3 rounded-lg bg-muted space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Avg. daily usage (last 14 days)</span>
+                <span className="font-medium">{usageHistory.length > 0 ? (usageHistory.slice(-14).reduce((s, d) => s + d.usage, 0) / Math.min(usageHistory.length, 14)).toFixed(2) : '0'} kWh</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">× 30 days</span>
+                <span className="font-medium">{predictedMonthlyUsage.toFixed(1)} kWh</span>
+              </div>
+              <div className="border-t border-border pt-2 flex justify-between">
+                <span className="text-muted-foreground">× Tariff rate</span>
+                <span className="font-medium">₹{costPerKwh}/kWh</span>
+              </div>
+              <div className="border-t border-border pt-2 flex justify-between font-bold">
+                <span>Estimated Monthly Bill</span>
+                <span className="text-primary">₹{estimatedCost.toFixed(2)}</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              💡 You can update your tariff rate in Settings → Usage Settings to match your electricity provider's rate.
+            </p>
           </CardContent>
         </Card>
 
@@ -226,7 +259,7 @@ export const PredictionScreen = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {weeklyData.map((week, index) => (
+              {weeklyData.map((week) => (
                 <div
                   key={week.week}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted"
