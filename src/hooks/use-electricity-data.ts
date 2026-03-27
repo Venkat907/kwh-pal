@@ -148,7 +148,7 @@ export const useMarkAlertRead = () => {
 };
 
 // Seed initial mock data for a new user
-export const seedUsageData = async (userId: string, costPerKwh: number = 0.12) => {
+export const seedUsageData = async (userId: string, costPerKwh: number = 8) => {
   // Check if user already has data
   const { data: existing } = await supabase
     .from('usage_readings')

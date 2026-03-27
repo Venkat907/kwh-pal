@@ -26,6 +26,7 @@ interface AppSettings {
   monthlyLimit: number;
   billingCycleStart: number;
   alertsEnabled: boolean;
+  costPerKwh: number;
 }
 
 interface AppContextType {
@@ -33,6 +34,7 @@ interface AppContextType {
   isAuthenticated: boolean;
   session: Session | null;
   authUser: User | null;
+  costPerKwh: number;
   usageHistory: DailyUsage[];
   todayUsage: number;
   currentCycleUsage: number;
@@ -126,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     monthlyLimit: dbSettings ? Number(dbSettings.monthly_limit) : 300,
     billingCycleStart: dbSettings?.billing_cycle_start ?? 1,
     alertsEnabled: dbSettings?.alerts_enabled ?? true,
+    costPerKwh: dbSettings ? Number(dbSettings.cost_per_kwh) : 8,
   };
 
   const usageHistory: DailyUsage[] = readings.map((r) => ({
@@ -192,6 +195,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (newSettings.monthlyLimit !== undefined) updates.monthly_limit = newSettings.monthlyLimit;
       if (newSettings.billingCycleStart !== undefined) updates.billing_cycle_start = newSettings.billingCycleStart;
       if (newSettings.alertsEnabled !== undefined) updates.alerts_enabled = newSettings.alertsEnabled;
+      if (newSettings.costPerKwh !== undefined) updates.cost_per_kwh = newSettings.costPerKwh;
       updateSettingsMutation.mutate({ userId, updates });
     },
     [userId, updateSettingsMutation]
@@ -231,6 +235,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
+        costPerKwh: settings.costPerKwh,
         user,
         isAuthenticated: !!authUser,
         session,

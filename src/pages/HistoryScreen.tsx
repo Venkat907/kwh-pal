@@ -124,7 +124,7 @@ export const HistoryScreen = () => {
                           })}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          ${day.cost.toFixed(2)} estimated
+                          ₹{day.cost.toFixed(2)} estimated
                         </p>
                       </div>
                       <div className="text-right">
@@ -194,7 +194,7 @@ export const HistoryScreen = () => {
                       {totalMonthlyUsage.toFixed(0)} kWh
                     </p>
                     <p className="text-muted-foreground mt-1">
-                      ${(totalMonthlyUsage * 0.12).toFixed(2)} estimated
+                      ₹{usageHistory.reduce((s, d) => s + d.cost, 0).toFixed(2)} estimated
                     </p>
                   </div>
 
@@ -204,14 +204,14 @@ export const HistoryScreen = () => {
                         Previous Month
                       </p>
                       <p className="text-2xl font-bold mt-1">285 kWh</p>
-                      <p className="text-xs text-muted-foreground">$34.20</p>
+                      <p className="text-xs text-muted-foreground">₹2,394.00</p>
                     </div>
                     <div className="p-4 rounded-lg bg-muted text-center">
                       <p className="text-sm text-muted-foreground">
                         2 Months Ago
                       </p>
                       <p className="text-2xl font-bold mt-1">310 kWh</p>
-                      <p className="text-xs text-muted-foreground">$37.20</p>
+                      <p className="text-xs text-muted-foreground">₹2,604.00</p>
                     </div>
                   </div>
                 </div>

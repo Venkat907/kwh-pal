@@ -9,12 +9,11 @@ import { useUpsertReading } from '@/hooks/use-electricity-data';
 import { toast } from 'sonner';
 
 export const LogUsageDialog = () => {
-  const { authUser } = useApp();
+  const { authUser, costPerKwh } = useApp();
   const upsertReading = useUpsertReading();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [kwh, setKwh] = useState('');
-  const [costPerKwh] = useState(0.12);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
