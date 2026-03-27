@@ -26,6 +26,7 @@ interface AppSettings {
   monthlyLimit: number;
   billingCycleStart: number;
   alertsEnabled: boolean;
+  costPerKwh: number;
 }
 
 interface AppContextType {
