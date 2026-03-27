@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ALTER COLUMN cost_per_kwh SET DEFAULT 8;
