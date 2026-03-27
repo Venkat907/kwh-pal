@@ -24,14 +24,27 @@ export const SettingsScreen = () => {
     navigate('/');
   };
 
+  const [limitInput, setLimitInput] = useState(settings.monthlyLimit.toString());
+
+  // Keep local state in sync when settings change externally
+  useEffect(() => {
+    setLimitInput(settings.monthlyLimit.toString());
+  }, [settings.monthlyLimit]);
+
   const handleLimitChange = (value: string) => {
-    const limit = parseInt(value);
+    setLimitInput(value);
+  };
+
+  const handleLimitBlur = () => {
+    const limit = parseInt(limitInput);
     if (!isNaN(limit) && limit > 0) {
       updateSettings({ monthlyLimit: limit });
       toast({
         title: 'Settings updated',
         description: `Monthly limit set to ${limit} kWh`,
       });
+    } else {
+      setLimitInput(settings.monthlyLimit.toString());
     }
   };
 
