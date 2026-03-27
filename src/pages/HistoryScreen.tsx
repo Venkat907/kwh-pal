@@ -211,7 +211,7 @@ export const HistoryScreen = () => {
                         2 Months Ago
                       </p>
                       <p className="text-2xl font-bold mt-1">310 kWh</p>
-                      <p className="text-xs text-muted-foreground">$37.20</p>
+                      <p className="text-xs text-muted-foreground">₹2,604.00</p>
                     </div>
                   </div>
                 </div>

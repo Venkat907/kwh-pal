@@ -66,7 +66,7 @@ export const MonthComparison = () => {
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Last Month</p>
             <p className="text-xl font-bold text-foreground">{previousUsage.toFixed(0)} <span className="text-xs font-normal">kWh</span></p>
-            <p className="text-sm text-muted-foreground">${previousCost.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">₹{previousCost.toFixed(2)}</p>
           </div>
         </div>
 
