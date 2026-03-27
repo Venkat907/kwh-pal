@@ -194,7 +194,7 @@ export const HistoryScreen = () => {
                       {totalMonthlyUsage.toFixed(0)} kWh
                     </p>
                     <p className="text-muted-foreground mt-1">
-                      ${(totalMonthlyUsage * 0.12).toFixed(2)} estimated
+                      ₹{usageHistory.reduce((s, d) => s + d.cost, 0).toFixed(2)} estimated
                     </p>
                   </div>
 
