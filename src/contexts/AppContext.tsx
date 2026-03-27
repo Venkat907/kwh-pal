@@ -34,6 +34,7 @@ interface AppContextType {
   isAuthenticated: boolean;
   session: Session | null;
   authUser: User | null;
+  costPerKwh: number;
   usageHistory: DailyUsage[];
   todayUsage: number;
   currentCycleUsage: number;
