@@ -235,6 +235,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
+        costPerKwh: settings.costPerKwh,
         user,
         isAuthenticated: !!authUser,
         session,
