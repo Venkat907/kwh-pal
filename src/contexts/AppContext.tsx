@@ -218,12 +218,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const increment = Number((Math.random() * 0.5).toFixed(2));
     const currentToday = usageHistory.find((r) => r.date === today);
     const newUsage = Number(((currentToday?.usage || 0) + increment).toFixed(2));
-    const costPerKwh = dbSettings ? Number(dbSettings.cost_per_kwh) : 0.12;
+    const selectedState = (dbSettings as any)?.selected_state ?? 'Andhra Pradesh';
+    const billCalc = calculateSlabBill(newUsage, selectedState);
     upsertReadingMutation.mutate({
       userId,
       date: today,
       usage_kwh: newUsage,
-      cost: Number((newUsage * costPerKwh).toFixed(2)),
+      cost: billCalc.totalCost,
     });
   }, [userId, usageHistory, dbSettings, upsertReadingMutation]);
 
