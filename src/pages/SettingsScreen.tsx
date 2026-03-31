@@ -317,9 +317,7 @@ export const SettingsScreen = () => {
                         : 'bg-muted hover:bg-muted/80'
                     }`}
                     onClick={() => {
-                      updateSettings({ costPerKwh: costPerKwh }); // trigger settings save
-                      // We need to save electricity_plan directly
-                      // updateSettings doesn't handle electricity_plan yet, so let's use the mutation directly
+                      // Plan selection is informational in this prototype
                     }}
                   >
                     <p className="font-medium text-sm">{plan.name}</p>
