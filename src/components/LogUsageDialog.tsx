@@ -10,7 +10,7 @@ import { calculateSlabBill } from '@/lib/electricity-pricing';
 import { toast } from 'sonner';
 
 export const LogUsageDialog = () => {
-  const { authUser, costPerKwh } = useApp();
+  const { authUser, settings } = useApp();
   const upsertReading = useUpsertReading();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
