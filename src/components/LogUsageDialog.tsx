@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useUpsertReading } from '@/hooks/use-electricity-data';
+import { calculateSlabBill } from '@/lib/electricity-pricing';
 import { toast } from 'sonner';
 
 export const LogUsageDialog = () => {
-  const { authUser, costPerKwh } = useApp();
+  const { authUser, settings } = useApp();
   const upsertReading = useUpsertReading();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -25,12 +26,15 @@ export const LogUsageDialog = () => {
       return;
     }
 
+    // Calculate cost using slab-based pricing
+    const billCalc = calculateSlabBill(usage, settings.selectedState);
+
     upsertReading.mutate(
       {
         userId: authUser.id,
         date,
         usage_kwh: usage,
-        cost: Number((usage * costPerKwh).toFixed(2)),
+        cost: billCalc.totalCost,
       },
       {
         onSuccess: () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Zap, Bell, Calendar, LogOut, ChevronRight, Award, IndianRupee } from 'lucide-react';
+import { ArrowLeft, User, Zap, Bell, Calendar, LogOut, ChevronRight, Award, IndianRupee, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BottomNav } from '@/components/BottomNav';
 import { useApp } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
+import { AVAILABLE_STATES, STATE_PRICING, calculateSlabBill } from '@/lib/electricity-pricing';
 
 export const SettingsScreen = () => {
-  const { user, settings, updateSettings, logout, usageHistory, costPerKwh } = useApp();
+  const { user, settings, updateSettings, logout, usageHistory } = useApp();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,15 +30,10 @@ export const SettingsScreen = () => {
   };
 
   const [limitInput, setLimitInput] = useState(settings.monthlyLimit.toString());
-  const [tariffInput, setTariffInput] = useState(costPerKwh.toString());
 
   useEffect(() => {
     setLimitInput(settings.monthlyLimit.toString());
   }, [settings.monthlyLimit]);
-
-  useEffect(() => {
-    setTariffInput(costPerKwh.toString());
-  }, [costPerKwh]);
 
   const handleLimitBlur = () => {
     const limit = parseInt(limitInput);
@@ -49,15 +45,8 @@ export const SettingsScreen = () => {
     }
   };
 
-  const handleTariffBlur = () => {
-    const tariff = parseFloat(tariffInput);
-    if (!isNaN(tariff) && tariff > 0) {
-      updateSettings({ costPerKwh: tariff });
-      toast({ title: 'Tariff updated', description: `Tariff set to ₹${tariff}/kWh` });
-    } else {
-      setTariffInput(costPerKwh.toString());
-    }
-  };
+
+
 
   // Billing history: group by month from usage data
   const billingHistory = (() => {
@@ -140,6 +129,47 @@ export const SettingsScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* State Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="stateSelect" className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" /> State / Region
+              </Label>
+              <Select
+                value={settings.selectedState}
+                onValueChange={(value) => {
+                  updateSettings({ selectedState: value });
+                  toast({ title: 'State updated', description: `Tariff slabs set for ${value}` });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_STATES.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {STATE_PRICING[state].name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Electricity tariff slabs are set based on your selected state.
+              </p>
+            </div>
+
+            {/* Slab Preview for selected state */}
+            <div className="space-y-2">
+              <Label>Current Tariff Slabs</Label>
+              <div className="rounded-lg bg-muted p-3 space-y-1">
+                {(STATE_PRICING[settings.selectedState] || STATE_PRICING['Custom']).slabs.map((slab, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{slab.label}</span>
+                    <span className="font-medium">₹{slab.rate}/unit</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="monthlyLimit">Monthly Limit (kWh)</Label>
               <Input
@@ -149,25 +179,6 @@ export const SettingsScreen = () => {
                 onChange={(e) => setLimitInput(e.target.value)}
                 onBlur={handleLimitBlur}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tariffRate" className="flex items-center gap-1">
-                <IndianRupee className="w-3.5 h-3.5" /> Tariff Rate (₹ per kWh)
-              </Label>
-              <Input
-                id="tariffRate"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="e.g. 8.00"
-                value={tariffInput}
-                onChange={(e) => setTariffInput(e.target.value)}
-                onBlur={handleTariffBlur}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set your electricity provider's tariff rate. This is used to calculate your estimated bill.
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -306,9 +317,7 @@ export const SettingsScreen = () => {
                         : 'bg-muted hover:bg-muted/80'
                     }`}
                     onClick={() => {
-                      updateSettings({ costPerKwh: costPerKwh }); // trigger settings save
-                      // We need to save electricity_plan directly
-                      // updateSettings doesn't handle electricity_plan yet, so let's use the mutation directly
+                      // Plan selection is informational in this prototype
                     }}
                   >
                     <p className="font-medium text-sm">{plan.name}</p>

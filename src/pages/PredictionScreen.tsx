@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BottomNav } from '@/components/BottomNav';
 import { useApp } from '@/contexts/AppContext';
 import { getBillCategory, getWeeklySummary } from '@/lib/electricity-data';
+import { calculateSlabBill } from '@/lib/electricity-pricing';
 import { cn } from '@/lib/utils';
 import {
   AreaChart,
@@ -18,11 +19,12 @@ import {
 } from 'recharts';
 
 export const PredictionScreen = () => {
-  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory, costPerKwh } =
+  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory } =
     useApp();
 
   const billCategory = getBillCategory(predictedMonthlyUsage, settings.monthlyLimit);
-  const estimatedCost = predictedMonthlyUsage * costPerKwh;
+  const billCalc = calculateSlabBill(predictedMonthlyUsage, settings.selectedState);
+  const estimatedCost = billCalc.totalCost;
   const weeklyData = getWeeklySummary(usageHistory);
 
   // Generate comparison data
@@ -136,41 +138,41 @@ export const PredictionScreen = () => {
               <p className="text-2xl font-bold">₹{estimatedCost.toFixed(2)}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Tariff</p>
-              <p className="font-medium">₹{costPerKwh}/kWh</p>
+              <p className="text-sm text-muted-foreground">Avg Rate</p>
+              <p className="font-medium">₹{billCalc.effectiveRate}/kWh</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Bill Calculation Breakdown */}
+        {/* Slab-Based Bill Breakdown */}
         <Card className="animate-slide-up" style={{ animationDelay: '75ms' }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Calculator className="w-5 h-5 text-primary" />
-              How Your Bill is Calculated
+              Bill Breakdown ({settings.selectedState})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="p-3 rounded-lg bg-muted space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Avg. daily usage (last 14 days)</span>
-                <span className="font-medium">{usageHistory.length > 0 ? (usageHistory.slice(-14).reduce((s, d) => s + d.usage, 0) / Math.min(usageHistory.length, 14)).toFixed(2) : '0'} kWh</span>
+              <div className="flex justify-between text-muted-foreground mb-1">
+                <span>Slab</span>
+                <span>Units × Rate = Cost</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">× 30 days</span>
-                <span className="font-medium">{predictedMonthlyUsage.toFixed(1)} kWh</span>
-              </div>
-              <div className="border-t border-border pt-2 flex justify-between">
-                <span className="text-muted-foreground">× Tariff rate</span>
-                <span className="font-medium">₹{costPerKwh}/kWh</span>
-              </div>
+              {billCalc.breakdown.map((item, i) => (
+                <div key={i} className="flex justify-between">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className="font-medium">
+                    {item.units.toFixed(0)} × ₹{item.rate} = ₹{item.cost.toFixed(2)}
+                  </span>
+                </div>
+              ))}
               <div className="border-t border-border pt-2 flex justify-between font-bold">
-                <span>Estimated Monthly Bill</span>
+                <span>Total ({billCalc.totalUnits.toFixed(0)} units)</span>
                 <span className="text-primary">₹{estimatedCost.toFixed(2)}</span>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              💡 You can update your tariff rate in Settings → Usage Settings to match your electricity provider's rate.
+              💡 Calculated using slab-based tariff for {settings.selectedState}. Change your state in Settings.
             </p>
           </CardContent>
         </Card>

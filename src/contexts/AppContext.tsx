@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { calculateSlabBill } from '@/lib/electricity-pricing';
 import {
   useUsageReadings,
   useUserSettings,
@@ -27,6 +28,7 @@ interface AppSettings {
   billingCycleStart: number;
   alertsEnabled: boolean;
   costPerKwh: number;
+  selectedState: string;
 }
 
 interface AppContextType {
@@ -129,6 +131,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     billingCycleStart: dbSettings?.billing_cycle_start ?? 1,
     alertsEnabled: dbSettings?.alerts_enabled ?? true,
     costPerKwh: dbSettings ? Number(dbSettings.cost_per_kwh) : 8,
+    selectedState: (dbSettings as any)?.selected_state ?? 'Andhra Pradesh',
   };
 
   const usageHistory: DailyUsage[] = readings.map((r) => ({
@@ -196,6 +199,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (newSettings.billingCycleStart !== undefined) updates.billing_cycle_start = newSettings.billingCycleStart;
       if (newSettings.alertsEnabled !== undefined) updates.alerts_enabled = newSettings.alertsEnabled;
       if (newSettings.costPerKwh !== undefined) updates.cost_per_kwh = newSettings.costPerKwh;
+      if (newSettings.selectedState !== undefined) (updates as any).selected_state = newSettings.selectedState;
       updateSettingsMutation.mutate({ userId, updates });
     },
     [userId, updateSettingsMutation]
@@ -214,12 +218,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const increment = Number((Math.random() * 0.5).toFixed(2));
     const currentToday = usageHistory.find((r) => r.date === today);
     const newUsage = Number(((currentToday?.usage || 0) + increment).toFixed(2));
-    const costPerKwh = dbSettings ? Number(dbSettings.cost_per_kwh) : 0.12;
+    const selectedState = (dbSettings as any)?.selected_state ?? 'Andhra Pradesh';
+    const billCalc = calculateSlabBill(newUsage, selectedState);
     upsertReadingMutation.mutate({
       userId,
       date: today,
       usage_kwh: newUsage,
-      cost: Number((newUsage * costPerKwh).toFixed(2)),
+      cost: billCalc.totalCost,
     });
   }, [userId, usageHistory, dbSettings, upsertReadingMutation]);
 
