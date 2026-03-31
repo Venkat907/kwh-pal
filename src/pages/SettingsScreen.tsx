@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AVAILABLE_STATES, STATE_PRICING, calculateSlabBill } from '@/lib/electricity-pricing';
 
 export const SettingsScreen = () => {
-  const { user, settings, updateSettings, logout, usageHistory, costPerKwh } = useApp();
+  const { user, settings, updateSettings, logout, usageHistory } = useApp();
   const navigate = useNavigate();
   const { toast } = useToast();
 
