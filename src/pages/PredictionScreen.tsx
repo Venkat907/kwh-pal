@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BottomNav } from '@/components/BottomNav';
 import { useApp } from '@/contexts/AppContext';
 import { getBillCategory, getWeeklySummary } from '@/lib/electricity-data';
+import { calculateSlabBill } from '@/lib/electricity-pricing';
 import { cn } from '@/lib/utils';
 import {
   AreaChart,
@@ -18,11 +19,12 @@ import {
 } from 'recharts';
 
 export const PredictionScreen = () => {
-  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory, costPerKwh } =
+  const { predictedMonthlyUsage, currentCycleUsage, settings, usageHistory } =
     useApp();
 
   const billCategory = getBillCategory(predictedMonthlyUsage, settings.monthlyLimit);
-  const estimatedCost = predictedMonthlyUsage * costPerKwh;
+  const billCalc = calculateSlabBill(predictedMonthlyUsage, settings.selectedState);
+  const estimatedCost = billCalc.totalCost;
   const weeklyData = getWeeklySummary(usageHistory);
 
   // Generate comparison data
