@@ -26,12 +26,15 @@ export const LogUsageDialog = () => {
       return;
     }
 
+    // Calculate cost using slab-based pricing
+    const billCalc = calculateSlabBill(usage, settings.selectedState);
+
     upsertReading.mutate(
       {
         userId: authUser.id,
         date,
         usage_kwh: usage,
-        cost: Number((usage * costPerKwh).toFixed(2)),
+        cost: billCalc.totalCost,
       },
       {
         onSuccess: () => {
