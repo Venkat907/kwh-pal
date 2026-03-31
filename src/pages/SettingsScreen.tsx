@@ -141,6 +141,47 @@ export const SettingsScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* State Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="stateSelect" className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" /> State / Region
+              </Label>
+              <Select
+                value={settings.selectedState}
+                onValueChange={(value) => {
+                  updateSettings({ selectedState: value });
+                  toast({ title: 'State updated', description: `Tariff slabs set for ${value}` });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_STATES.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {STATE_PRICING[state].name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Electricity tariff slabs are set based on your selected state.
+              </p>
+            </div>
+
+            {/* Slab Preview for selected state */}
+            <div className="space-y-2">
+              <Label>Current Tariff Slabs</Label>
+              <div className="rounded-lg bg-muted p-3 space-y-1">
+                {(STATE_PRICING[settings.selectedState] || STATE_PRICING['Custom']).slabs.map((slab, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{slab.label}</span>
+                    <span className="font-medium">₹{slab.rate}/unit</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="monthlyLimit">Monthly Limit (kWh)</Label>
               <Input
@@ -150,25 +191,6 @@ export const SettingsScreen = () => {
                 onChange={(e) => setLimitInput(e.target.value)}
                 onBlur={handleLimitBlur}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tariffRate" className="flex items-center gap-1">
-                <IndianRupee className="w-3.5 h-3.5" /> Tariff Rate (₹ per kWh)
-              </Label>
-              <Input
-                id="tariffRate"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="e.g. 8.00"
-                value={tariffInput}
-                onChange={(e) => setTariffInput(e.target.value)}
-                onBlur={handleTariffBlur}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set your electricity provider's tariff rate. This is used to calculate your estimated bill.
-              </p>
             </div>
 
             <div className="space-y-2">
