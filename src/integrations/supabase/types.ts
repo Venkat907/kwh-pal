@@ -111,6 +111,7 @@ export type Database = {
           electricity_plan: string
           id: string
           monthly_limit: number
+          selected_state: string
           updated_at: string
           user_id: string
         }
@@ -123,6 +124,7 @@ export type Database = {
           electricity_plan?: string
           id?: string
           monthly_limit?: number
+          selected_state?: string
           updated_at?: string
           user_id: string
         }
@@ -135,6 +137,7 @@ export type Database = {
           electricity_plan?: string
           id?: string
           monthly_limit?: number
+          selected_state?: string
           updated_at?: string
           user_id?: string
         }

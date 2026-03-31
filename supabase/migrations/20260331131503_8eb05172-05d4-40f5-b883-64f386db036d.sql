@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ADD COLUMN selected_state text NOT NULL DEFAULT 'Andhra Pradesh';
