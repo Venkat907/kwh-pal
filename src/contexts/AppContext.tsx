@@ -27,6 +27,7 @@ interface AppSettings {
   billingCycleStart: number;
   alertsEnabled: boolean;
   costPerKwh: number;
+  selectedState: string;
 }
 
 interface AppContextType {
