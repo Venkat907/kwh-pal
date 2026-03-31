@@ -130,6 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     billingCycleStart: dbSettings?.billing_cycle_start ?? 1,
     alertsEnabled: dbSettings?.alerts_enabled ?? true,
     costPerKwh: dbSettings ? Number(dbSettings.cost_per_kwh) : 8,
+    selectedState: (dbSettings as any)?.selected_state ?? 'Andhra Pradesh',
   };
 
   const usageHistory: DailyUsage[] = readings.map((r) => ({
