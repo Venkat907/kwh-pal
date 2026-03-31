@@ -30,15 +30,10 @@ export const SettingsScreen = () => {
   };
 
   const [limitInput, setLimitInput] = useState(settings.monthlyLimit.toString());
-  const [tariffInput, setTariffInput] = useState(costPerKwh.toString());
 
   useEffect(() => {
     setLimitInput(settings.monthlyLimit.toString());
   }, [settings.monthlyLimit]);
-
-  useEffect(() => {
-    setTariffInput(costPerKwh.toString());
-  }, [costPerKwh]);
 
   const handleLimitBlur = () => {
     const limit = parseInt(limitInput);
