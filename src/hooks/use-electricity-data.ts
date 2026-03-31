@@ -73,7 +73,7 @@ export const useUpdateSettings = () => {
       updates,
     }: {
       userId: string;
-      updates: Partial<Pick<UserSettings, 'monthly_limit' | 'billing_cycle_start' | 'alerts_enabled' | 'electricity_plan' | 'consumer_number' | 'cost_per_kwh'>>;
+      updates: Partial<Pick<UserSettings, 'monthly_limit' | 'billing_cycle_start' | 'alerts_enabled' | 'electricity_plan' | 'consumer_number' | 'cost_per_kwh'>> & { selected_state?: string };
     }) => {
       const { error } = await supabase
         .from('user_settings')
