@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Zap, Bell, Calendar, LogOut, ChevronRight, Award, IndianRupee } from 'lucide-react';
+import { ArrowLeft, User, Zap, Bell, Calendar, LogOut, ChevronRight, Award, IndianRupee, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BottomNav } from '@/components/BottomNav';
 import { useApp } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
+import { AVAILABLE_STATES, STATE_PRICING, calculateSlabBill } from '@/lib/electricity-pricing';
 
 export const SettingsScreen = () => {
   const { user, settings, updateSettings, logout, usageHistory, costPerKwh } = useApp();
