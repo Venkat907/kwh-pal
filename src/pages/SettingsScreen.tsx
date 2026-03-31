@@ -45,15 +45,8 @@ export const SettingsScreen = () => {
     }
   };
 
-  const handleTariffBlur = () => {
-    const tariff = parseFloat(tariffInput);
-    if (!isNaN(tariff) && tariff > 0) {
-      updateSettings({ costPerKwh: tariff });
-      toast({ title: 'Tariff updated', description: `Tariff set to ₹${tariff}/kWh` });
-    } else {
-      setTariffInput(costPerKwh.toString());
-    }
-  };
+
+
 
   // Billing history: group by month from usage data
   const billingHistory = (() => {
