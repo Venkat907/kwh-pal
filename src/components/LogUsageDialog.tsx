@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useUpsertReading } from '@/hooks/use-electricity-data';
+import { calculateSlabBill } from '@/lib/electricity-pricing';
 import { toast } from 'sonner';
 
 export const LogUsageDialog = () => {
