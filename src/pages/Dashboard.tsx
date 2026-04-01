@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, Zap } from 'lucide-react';
+import { Bell, ChevronRight, Zap, Wallet, TrendingDown, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
