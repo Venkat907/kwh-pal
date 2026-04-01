@@ -137,30 +137,77 @@ export const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
+        {/* Budget Remaining Card */}
+        <Card className={`animate-slide-up border ${budgetStatus.bg}`} style={{ animationDelay: '100ms' }}>
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg ${budgetStatus.bg}`}>
+                  <BudgetIcon className={`w-5 h-5 ${budgetStatus.accent}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Budget Remaining</p>
+                  <p className={`text-2xl font-bold ${budgetStatus.color}`}>
+                    ₹{budgetRemaining.toFixed(0)}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${budgetStatus.bg} ${budgetStatus.accent}`}>
+                  {budgetStatus.label}
+                </span>
+                <p className="text-xs text-muted-foreground mt-1">{remainingDays} days left</p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">₹{currentCycleCost.toFixed(0)} spent</span>
+                <span className="font-medium">₹{settings.monthlyLimit} budget</span>
+              </div>
+              <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
+                    budgetProgress >= 100 ? 'bg-red-500' :
+                    budgetProgress >= 85 ? 'bg-red-400' :
+                    budgetProgress >= 70 ? 'bg-amber-400' :
+                    'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.min(budgetProgress, 100)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Day {daysElapsed} of billing cycle</span>
+                <span>₹{dailyBudgetRemaining.toFixed(0)}/day available</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Progress */}
+        <Card className="animate-slide-up" style={{ animationDelay: '120ms' }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center justify-between">
+              <span>Monthly Usage</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                {remainingDays} days left
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  ₹{currentCycleCost.toFixed(0)} spent
-                </span>
-                <span className="font-medium">
-                  ₹{settings.monthlyLimit} budget
+                  {currentCycleUsage.toFixed(1)} kWh used
                 </span>
               </div>
-              <Progress value={Math.min(budgetProgress, 100)} className="h-3" />
+              <Progress value={Math.min((currentCycleUsage / 300) * 100, 100)} className="h-2" />
               <p className="text-xs text-muted-foreground">
                 Day {daysElapsed} of billing cycle
               </p>
             </div>
           </CardContent>
         </Card>
-
-        {/* Month Comparison */}
-        <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
-          <MonthComparison />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '150ms' }}>
           <Link to="/guidance">
             <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
               <CardContent className="p-4 flex items-center gap-3">
