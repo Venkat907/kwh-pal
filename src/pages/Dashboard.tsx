@@ -208,6 +208,14 @@ export const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Month Comparison */}
+        <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+          <MonthComparison />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '170ms' }}>
           <Link to="/guidance">
             <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
               <CardContent className="p-4 flex items-center gap-3">
