@@ -19,6 +19,7 @@ export interface UserSettings {
   electricity_plan: string;
   consumer_number: string | null;
   cost_per_kwh: number;
+  selected_state: string;
   created_at: string;
   updated_at: string;
 }
