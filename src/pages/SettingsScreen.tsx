@@ -39,7 +39,7 @@ export const SettingsScreen = () => {
     const limit = parseInt(limitInput);
     if (!isNaN(limit) && limit > 0) {
       updateSettings({ monthlyLimit: limit });
-      toast({ title: 'Settings updated', description: `Monthly limit set to ${limit} kWh` });
+      toast({ title: 'Settings updated', description: `Monthly budget set to ₹${limit}` });
     } else {
       setLimitInput(settings.monthlyLimit.toString());
     }
