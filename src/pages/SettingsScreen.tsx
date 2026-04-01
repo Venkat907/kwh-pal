@@ -171,14 +171,18 @@ export const SettingsScreen = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="monthlyLimit">Monthly Limit (kWh)</Label>
+              <Label htmlFor="monthlyLimit">Monthly Budget (₹)</Label>
               <Input
                 id="monthlyLimit"
                 type="number"
                 value={limitInput}
                 onChange={(e) => setLimitInput(e.target.value)}
                 onBlur={handleLimitBlur}
+                placeholder="e.g. 2000"
               />
+              <p className="text-xs text-muted-foreground">
+                Set your monthly electricity budget in rupees.
+              </p>
             </div>
 
             <div className="space-y-2">

@@ -194,12 +194,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSettings = useCallback(
     (newSettings: Partial<AppSettings>) => {
       if (!userId) return;
-      const updates: any = {};
+      const updates: Record<string, any> = {};
       if (newSettings.monthlyLimit !== undefined) updates.monthly_limit = newSettings.monthlyLimit;
       if (newSettings.billingCycleStart !== undefined) updates.billing_cycle_start = newSettings.billingCycleStart;
       if (newSettings.alertsEnabled !== undefined) updates.alerts_enabled = newSettings.alertsEnabled;
       if (newSettings.costPerKwh !== undefined) updates.cost_per_kwh = newSettings.costPerKwh;
-      if (newSettings.selectedState !== undefined) (updates as any).selected_state = newSettings.selectedState;
+      if (newSettings.selectedState !== undefined) updates.selected_state = newSettings.selectedState;
       updateSettingsMutation.mutate({ userId, updates });
     },
     [userId, updateSettingsMutation]
