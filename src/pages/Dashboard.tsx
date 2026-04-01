@@ -24,10 +24,20 @@ export const Dashboard = () => {
     settings,
     alerts,
     markAlertAsRead,
+    usageHistory,
   } = useApp();
 
   const usageStatus = getUsageStatus(todayUsage, recommendedDailyUsage);
-  const monthlyProgress = (currentCycleUsage / settings.monthlyLimit) * 100;
+  // Calculate current cycle cost in ₹ for budget tracking
+  const currentCycleCost = usageHistory
+    .filter((d) => {
+      const today = new Date();
+      const cycleStart = new Date(today.getFullYear(), today.getMonth(), settings.billingCycleStart);
+      if (cycleStart > today) cycleStart.setMonth(cycleStart.getMonth() - 1);
+      return new Date(d.date) >= cycleStart;
+    })
+    .reduce((sum, d) => sum + d.cost, 0);
+  const budgetProgress = (currentCycleCost / settings.monthlyLimit) * 100;
   const unreadAlerts = alerts.filter((a) => !a.read);
 
   return (
