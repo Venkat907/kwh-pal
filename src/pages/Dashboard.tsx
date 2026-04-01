@@ -127,13 +127,13 @@ export const Dashboard = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {currentCycleUsage.toFixed(0)} kWh used
+                  ₹{currentCycleCost.toFixed(0)} spent
                 </span>
                 <span className="font-medium">
-                  {settings.monthlyLimit} kWh limit
+                  ₹{settings.monthlyLimit} budget
                 </span>
               </div>
-              <Progress value={Math.min(monthlyProgress, 100)} className="h-3" />
+              <Progress value={Math.min(budgetProgress, 100)} className="h-3" />
               <p className="text-xs text-muted-foreground">
                 Day {daysElapsed} of billing cycle
               </p>
