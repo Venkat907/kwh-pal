@@ -126,17 +126,6 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Monthly Progress */}
-        <Card className="animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center justify-between">
-              <span>Monthly Progress</span>
-              <span className="text-sm font-normal text-muted-foreground">
-                {remainingDays} days left
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
         {/* Budget Remaining Card */}
         <Card className={`animate-slide-up border ${budgetStatus.bg}`} style={{ animationDelay: '100ms' }}>
           <CardContent className="pt-5 pb-4">
