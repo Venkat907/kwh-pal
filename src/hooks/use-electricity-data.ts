@@ -19,6 +19,7 @@ export interface UserSettings {
   electricity_plan: string;
   consumer_number: string | null;
   cost_per_kwh: number;
+  selected_state: string;
   created_at: string;
   updated_at: string;
 }
@@ -73,7 +74,7 @@ export const useUpdateSettings = () => {
       updates,
     }: {
       userId: string;
-      updates: Partial<Pick<UserSettings, 'monthly_limit' | 'billing_cycle_start' | 'alerts_enabled' | 'electricity_plan' | 'consumer_number' | 'cost_per_kwh'>> & { selected_state?: string };
+      updates: Partial<Pick<UserSettings, 'monthly_limit' | 'billing_cycle_start' | 'alerts_enabled' | 'electricity_plan' | 'consumer_number' | 'cost_per_kwh' | 'selected_state'>>;
     }) => {
       const { error } = await supabase
         .from('user_settings')

@@ -24,10 +24,20 @@ export const Dashboard = () => {
     settings,
     alerts,
     markAlertAsRead,
+    usageHistory,
   } = useApp();
 
   const usageStatus = getUsageStatus(todayUsage, recommendedDailyUsage);
-  const monthlyProgress = (currentCycleUsage / settings.monthlyLimit) * 100;
+  // Calculate current cycle cost in ₹ for budget tracking
+  const currentCycleCost = usageHistory
+    .filter((d) => {
+      const today = new Date();
+      const cycleStart = new Date(today.getFullYear(), today.getMonth(), settings.billingCycleStart);
+      if (cycleStart > today) cycleStart.setMonth(cycleStart.getMonth() - 1);
+      return new Date(d.date) >= cycleStart;
+    })
+    .reduce((sum, d) => sum + d.cost, 0);
+  const budgetProgress = (currentCycleCost / settings.monthlyLimit) * 100;
   const unreadAlerts = alerts.filter((a) => !a.read);
 
   return (
@@ -117,13 +127,13 @@ export const Dashboard = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {currentCycleUsage.toFixed(0)} kWh used
+                  ₹{currentCycleCost.toFixed(0)} spent
                 </span>
                 <span className="font-medium">
-                  {settings.monthlyLimit} kWh limit
+                  ₹{settings.monthlyLimit} budget
                 </span>
               </div>
-              <Progress value={Math.min(monthlyProgress, 100)} className="h-3" />
+              <Progress value={Math.min(budgetProgress, 100)} className="h-3" />
               <p className="text-xs text-muted-foreground">
                 Day {daysElapsed} of billing cycle
               </p>
