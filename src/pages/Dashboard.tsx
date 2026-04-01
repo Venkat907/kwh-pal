@@ -38,6 +38,19 @@ export const Dashboard = () => {
     })
     .reduce((sum, d) => sum + d.cost, 0);
   const budgetProgress = (currentCycleCost / settings.monthlyLimit) * 100;
+  const budgetRemaining = Math.max(0, settings.monthlyLimit - currentCycleCost);
+  const dailyBudgetRemaining = remainingDays > 0 ? budgetRemaining / remainingDays : 0;
+
+  // Color-coded budget status
+  const getBudgetStatus = () => {
+    if (budgetProgress >= 100) return { color: 'text-red-600', bg: 'bg-red-50 border-red-200', icon: AlertTriangle, label: 'Over Budget!', accent: 'text-red-500' };
+    if (budgetProgress >= 85) return { color: 'text-red-500', bg: 'bg-red-50 border-red-200', icon: AlertTriangle, label: 'Critical', accent: 'text-red-500' };
+    if (budgetProgress >= 70) return { color: 'text-amber-500', bg: 'bg-amber-50 border-amber-200', icon: TrendingDown, label: 'Warning', accent: 'text-amber-500' };
+    return { color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200', icon: Wallet, label: 'On Track', accent: 'text-emerald-500' };
+  };
+  const budgetStatus = getBudgetStatus();
+  const BudgetIcon = budgetStatus.icon;
+
   const unreadAlerts = alerts.filter((a) => !a.read);
 
   return (
